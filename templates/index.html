@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Personal Budget Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Space+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<div class="app-wrapper">
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="header-title-block">
+        <span class="header-icon">₹</span>
+        <div>
+          <h1 class="header-title">Personal Budget Calculator</h1>
+          <p class="header-subtitle">Track your income &amp; expenses month by month</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-ghost" id="clearBtn">Clear All</button>
+        <button class="btn btn-primary" id="saveBtn">💾 Save</button>
+        <button class="btn btn-accent" id="calcBtn">⚡ Calculate</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Summary Bar -->
+  <div class="summary-bar" id="summaryBar">
+    <div class="summary-card income">
+      <div class="summary-label">Annual Income</div>
+      <div class="summary-value" id="summaryIncome">₹0.00</div>
+    </div>
+    <div class="summary-card expenses">
+      <div class="summary-label">Annual Expenses</div>
+      <div class="summary-value" id="summaryExpenses">₹0.00</div>
+    </div>
+    <div class="summary-card balance">
+      <div class="summary-label">Cash Short/Extra</div>
+      <div class="summary-value" id="summaryBalance">₹0.00</div>
+    </div>
+  </div>
+
+  <!-- Main Table Area -->
+  <main class="table-container">
+    <div class="table-scroll">
+      <table class="budget-table" id="budgetTable">
+        <colgroup>
+          <col class="col-label">
+          {% for m in months %}<col class="col-month">{% endfor %}
+          <col class="col-year">
+        </colgroup>
+
+        <!-- ===== REVENUE ===== -->
+        {% set rev = structure['revenue'] %}
+        <thead>
+          <tr>
+            <th class="table-title-cell" colspan="{{ months|length + 2 }}">
+              PERSONAL BUDGET CALCULATOR
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Section header -->
+          <tr class="section-header-row revenue-section">
+            <td class="section-label">{{ rev.label }}</td>
+            {% for m in months %}<td></td>{% endfor %}
+            <td></td>
+          </tr>
+
+          {% for cat_key, cat in rev.categories.items() %}
+          <!-- Category header -->
+          <tr class="category-header-row">
+            <td class="cat-label">{{ cat.label }}</td>
+            {% for m in months %}<td class="month-head">{{ m }}</td>{% endfor %}
+            <td class="month-head">YEAR</td>
+          </tr>
+
+          {% for item in cat["items"] %}
+          <tr class="item-row" data-section="revenue" data-category="{{ cat_key }}" data-item="{{ item }}">
+            <td class="item-label">{{ item }}</td>
+            {% for m in months %}
+            <td class="cell-input-td">
+              <input type="number"
+                     class="cell-input"
+                     data-section="revenue"
+                     data-category="{{ cat_key }}"
+                     data-item="{{ item }}"
+                     data-month="{{ m }}"
+                     placeholder="0"
+                     min="0"
+                     step="0.01">
+            </td>
+            {% endfor %}
+            <td class="year-total-cell" data-total-row="revenue_{{ cat_key }}_{{ item }}">₹0.00</td>
+          </tr>
+          {% endfor %}
+
+          <!-- Category Total row -->
+          <tr class="total-row" data-total-cat="revenue_{{ cat_key }}">
+            <td class="total-label">Total</td>
+            {% for m in months %}
+            <td class="total-cell" data-total-month="{{ m }}" data-total-cat="revenue_{{ cat_key }}">₹0.00</td>
+            {% endfor %}
+            <td class="total-cell year-total" data-total-cat="revenue_{{ cat_key }}_year">₹0.00</td>
+          </tr>
+          {% endfor %}
+
+          <tr class="spacer-row"><td colspan="{{ months|length + 2 }}"></td></tr>
+
+          <!-- ===== EXPENSES ===== -->
+          {% set exp = structure['expenses'] %}
+          <tr class="section-header-row expense-section">
+            <td class="section-label">{{ exp.label }}</td>
+            {% for m in months %}<td></td>{% endfor %}
+            <td></td>
+          </tr>
+
+          {% for cat_key, cat in exp.categories.items() %}
+          <tr class="category-header-row">
+            <td class="cat-label">{{ cat.label }}</td>
+            {% for m in months %}<td class="month-head">{{ m }}</td>{% endfor %}
+            <td class="month-head">YEAR</td>
+          </tr>
+
+          {% for item in cat["items"] %}
+          <tr class="item-row" data-section="expenses" data-category="{{ cat_key }}" data-item="{{ item }}">
+            <td class="item-label">{{ item }}</td>
+            {% for m in months %}
+            <td class="cell-input-td">
+              <input type="number"
+                     class="cell-input"
+                     data-section="expenses"
+                     data-category="{{ cat_key }}"
+                     data-item="{{ item }}"
+                     data-month="{{ m }}"
+                     placeholder="0"
+                     min="0"
+                     step="0.01">
+            </td>
+            {% endfor %}
+            <td class="year-total-cell" data-total-row="expenses_{{ cat_key }}_{{ item }}">₹0.00</td>
+          </tr>
+          {% endfor %}
+
+          <tr class="total-row" data-total-cat="expenses_{{ cat_key }}">
+            <td class="total-label">Total</td>
+            {% for m in months %}
+            <td class="total-cell" data-total-month="{{ m }}" data-total-cat="expenses_{{ cat_key }}">₹0.00</td>
+            {% endfor %}
+            <td class="total-cell year-total" data-total-cat="expenses_{{ cat_key }}_year">₹0.00</td>
+          </tr>
+
+          <tr class="spacer-row"><td colspan="{{ months|length + 2 }}"></td></tr>
+          {% endfor %}
+
+          <!-- ===== TOTALS SECTION ===== -->
+          <tr class="totals-header-row">
+            <td class="section-label">TOTALS</td>
+            {% for m in months %}<td class="month-head">{{ m }}</td>{% endfor %}
+            <td class="month-head">YEAR</td>
+          </tr>
+
+          <tr class="grand-total-row expenses-total">
+            <td class="total-label">Total expenses</td>
+            {% for m in months %}
+            <td class="total-cell grand-cell" id="grand_exp_{{ m }}">₹0.00</td>
+            {% endfor %}
+            <td class="total-cell grand-cell" id="grand_exp_YEAR">₹0.00</td>
+          </tr>
+
+          <tr class="grand-total-row cash-row">
+            <td class="total-label cash-label">Cash short/extra</td>
+            {% for m in months %}
+            <td class="total-cell grand-cell cash-cell" id="cash_{{ m }}">₹0.00</td>
+            {% endfor %}
+            <td class="total-cell grand-cell cash-cell" id="cash_YEAR">₹0.00</td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    <span>Personal Budget Calculator &mdash; All values in Indian Rupees (₹)</span>
+  </footer>
+</div>
+
+<!-- Toast notification -->
+<div class="toast" id="toast"></div>
+
+<script src="{{ url_for('static', filename='js/budget.js') }}"></script>
+</body>
+</html>
